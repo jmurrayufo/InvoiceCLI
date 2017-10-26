@@ -184,7 +184,7 @@ class SQL:
 
     def put_client(self,client):
         self.c.execute("""
-            INSERT INTO clients 
+            INSERT OR REPLACE INTO clients 
             (
              client_id,
              first_name,
@@ -210,3 +210,18 @@ class SQL:
              )
             )
         self.conn.commit()
+
+
+
+    #####################
+    ## Invoice Methods ##
+    #####################
+
+    def get_invoice(self,**kwargs):
+        pass
+
+    def get_invoices(self):
+        pass
+
+    def put_invoice(self,invoice,new=False):
+        pass

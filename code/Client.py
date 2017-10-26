@@ -24,7 +24,7 @@ class Client:
         self.invoices = kwargs.get('invoices', None)
         self.created = kwargs.get('created',None)
 
-        if self.client_id is None:
+        if self.client_id is None and len(kwargs):
             try:
                 db_dict = self.db.get_client(first_name=self.first_name, last_name=self.last_name)
                 self.first_name = db_dict.get('first_name', None)
@@ -40,6 +40,10 @@ class Client:
             except ValueError:
                 self.client_id = uuid.uuid1()
                 self.created = datetime.datetime.now()
+        
+        if type(self.created) is str:
+            self.created = datetime.datetime.strptime(self.created,"%Y-%m-%dT%H:%M:%S")
+
 
 
     def __repr__(self):
@@ -47,10 +51,15 @@ class Client:
 
 
     def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+    def user_card(self):
         return f"{self.first_name} {self.last_name}"\
-        +f"\n  {self.email}"\
         +f"\n  {self.address}"\
-        +f"\n  {self.city}, {self.state} {self.zip_code}"
+        +f"\n  {self.city}, {self.state} {self.zip_code}"\
+        +f"\n  {self.email}"\
+        +f"\n  Created {self.created} ({datetime.datetime.now()-self.created} old)"
 
 
     @property
@@ -70,7 +79,7 @@ class Client:
         print("Press ctrl+c to quit")
         print("Press ctrl+d to go back a value")
         state = 0
-        while state < 7:
+        while 1:
             try:
                 if state == 0:
                     print(f"First Name: {self.first_name}")
@@ -107,6 +116,18 @@ class Client:
                     data = prompt_text("> ")
                     if data != '':
                         self.zip_code = data
+                if state >= 7:
+                    print("Final check before saving edits.")
+                    print(self)
+                    print("Is the above correct?")
+                    selection = input("(yes/no)> ")
+                    if selection.startswith(('y','Y')):
+                        self.save_to_db()
+                        return
+                    elif selection.startswith(('n','N')):
+                        return
+                    else:
+                        continue
 
             except KeyboardInterrupt as e:
                 return
@@ -116,11 +137,23 @@ class Client:
 
             state += 1
 
-        print("Final check before saving edits.")
-        print(self)
-        print("Is the above correct?")
-        if input("(yes/no)> ").startswith(('y','Y')):
-            self.save_to_db()
 
-        
+    @classmethod
+    def prompt_select_user(cls):
+        if cls.db == None:
+            cls.db = SQL.SQL()
+        clients_list = cls.db.get_clients()
+        for idx,client_dict in enumerate(clients_list):
+            client = Client(**client_dict)
+            print(f"[{idx:,.0f}] {client.first_name} {client.last_name}")
+        print("Which user?")
+        try:
+            selection = int(input("> "))
+        except (KeyboardInterrupt, ValueError):
+            return None
+        try:
+            return Client(**clients_list[selection])
+        except IndexError:
+            print(f"Error! No valid user at index {idx}!\n")
+            raise
 
