@@ -151,7 +151,7 @@ class SQL:
     ## Client Methods ##
     ####################
 
-    def get_client(self, client=None, first_name=None, last_name=None):
+    def get_client(self, client_id=None, first_name=None, last_name=None):
         """
         Raises
             ValueError -- Didn't find one, and only one, client.
@@ -168,6 +168,10 @@ class SQL:
             self.c.execute(
                 "SELECT * FROM clients WHERE (last_name=?)",
                 (last_name,))
+        elif client_id is not None:
+            self.c.execute(
+                "SELECT * FROM clients WHERE (client_id=?)",
+                (str(client_id),))
         else:
             raise ValueError("Must be given either a first or last name!")
 
@@ -209,7 +213,7 @@ class SQL:
              client.created.isoformat(timespec='seconds')
              )
             )
-        self.conn.commit()
+        # self.conn.commit()
 
 
 
@@ -221,7 +225,71 @@ class SQL:
         pass
 
     def get_invoices(self):
+        self.c.execute("SELECT * FROM invoices")
+        return self.c.fetchall()
+
+    def get_invoices_ex(self):
         pass
 
     def put_invoice(self,invoice,new=False):
+        self.c.execute("""
+            INSERT OR REPLACE INTO invoices 
+            (
+             client_id,
+             invoice_id,
+             name,
+             description,
+             created,
+             due,
+             state
+             )
+            VALUES
+            (?,?,?,?,?,?,?)""",
+            (str(invoice.client_id),
+             str(invoice.invoice_id),
+             invoice.name,
+             invoice.description,
+             invoice.created.isoformat(timespec='seconds'),
+             invoice.due.isoformat(),
+             invoice.state,
+             )
+            )
+        # self.conn.commit()
+
+
+    #####################
+    ## Item Methods ##
+    #####################
+
+    def get_item(self,**kwargs):
         pass
+
+    def get_items(self):
+        pass
+
+    def put_item(self,item,new=False):
+        self.c.execute("""
+            INSERT OR REPLACE INTO items 
+            (
+             item_id,
+             invoice_id,
+             name,
+             description,
+             amount,
+             quantity,
+             discount,
+             tax
+             )
+            VALUES
+            (?,?,?,?,?,?,?,?)""",
+            (str(item.item_id),
+             str(item.invoice_id),
+             item.name,
+             item.description,
+             item.amount,
+             item.quantity,
+             item.discount,
+             item.tax
+             )
+            )
+        # self.conn.commit()

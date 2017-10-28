@@ -9,10 +9,8 @@ from .Helpers import prompt_text
 
 class Client:
 
-    db = None
+    db = SQL.SQL()
     def __init__(self,*args,**kwargs):
-        if self.db == None:
-            self.db = SQL.SQL()
         self.first_name = kwargs.get('first_name', None)
         self.last_name = kwargs.get('last_name', None)
         self.email = kwargs.get('email', None)
@@ -21,7 +19,7 @@ class Client:
         self.city = kwargs.get('city', None)
         self.zip_code = kwargs.get('zip_code', None)
         self.client_id = kwargs.get('client_id', None)
-        self.invoices = kwargs.get('invoices', None)
+        self.invoices = kwargs.get('invoices', [])
         self.created = kwargs.get('created',None)
 
         if self.client_id is None and len(kwargs):
@@ -35,7 +33,7 @@ class Client:
                 self.city = db_dict.get('city', None)
                 self.zip_code = db_dict.get('zip_code', None)
                 self.client_id = db_dict.get('client_id', None)
-                self.invoices = db_dict.get('invoices', None)
+                self.invoices = db_dict.get('invoices', [])
                 self.created = db_dict.get('created',None)
             except ValueError:
                 self.client_id = uuid.uuid1()
@@ -43,7 +41,6 @@ class Client:
         
         if type(self.created) is str:
             self.created = datetime.datetime.strptime(self.created,"%Y-%m-%dT%H:%M:%S")
-
 
 
     def __repr__(self):
@@ -54,7 +51,7 @@ class Client:
         return f"{self.first_name} {self.last_name}"
 
 
-    def user_card(self):
+    def card(self):
         return f"{self.first_name} {self.last_name}"\
         +f"\n  {self.address}"\
         +f"\n  {self.city}, {self.state} {self.zip_code}"\
@@ -70,6 +67,16 @@ class Client:
 
     def save_to_db(self):
         self.db.put_client(self)
+        self.db.commit()
+
+
+    def load_invoices(self):
+        data = self.db.get_invoices()
+        for datum in data:
+            invoice = Invoice.Invoice(**datum)
+            if invoice.client_id == self.client_id:
+                invoice.load_items()
+                self.invoices.append(invoice)
 
 
     # GUI Link Functions
@@ -84,37 +91,37 @@ class Client:
                 if state == 0:
                     print(f"First Name: {self.first_name}")
                     data = prompt_text("> ")
-                    if data != '':
+                    if data is not None:
                         self.first_name = data
                 if state == 1:        
                     print(f"Last Name: {self.last_name}")
                     data = prompt_text("> ")
-                    if data != '':
+                    if data is not None:
                         self.last_name = data
                 if state == 2:        
                     print(f"E-Mail: {self.email}")
                     data = prompt_text("> ")
-                    if data != '':
+                    if data is not None:
                         self.email = data
                 if state == 3:        
                     print(f"Address: {self.address}")
                     data = prompt_text("> ")
-                    if data != '':
+                    if data is not None:
                         self.address = data
                 if state == 4:        
                     print(f"State: {self.state}")
                     data = prompt_text("> ")
-                    if data != '':
+                    if data is not None:
                         self.state = data
                 if state == 5:        
                     print(f"City: {self.city}")
                     data = prompt_text("> ")
-                    if data != '':
+                    if data is not None:
                         self.city = data
                 if state == 6:        
                     print(f"Zip: {self.zip_code}")
                     data = prompt_text("> ")
-                    if data != '':
+                    if data is not None:
                         self.zip_code = data
                 if state >= 7:
                     print("Final check before saving edits.")
@@ -140,8 +147,6 @@ class Client:
 
     @classmethod
     def prompt_select_user(cls):
-        if cls.db == None:
-            cls.db = SQL.SQL()
         clients_list = cls.db.get_clients()
         for idx,client_dict in enumerate(clients_list):
             client = Client(**client_dict)
@@ -156,4 +161,14 @@ class Client:
         except IndexError:
             print(f"Error! No valid user at index {idx}!\n")
             raise
+
+
+    @classmethod
+    def clients_iter(cls):
+        clients_list = cls.db.get_clients()
+        for idx,client_dict in enumerate(clients_list):
+            client = Client(**client_dict)
+            # print(f"[{idx:,.0f}] {client.first_name} {client.last_name}")
+            yield client
+        return
 

@@ -5,7 +5,7 @@ import time
 import argparse
 
 
-from code import Client
+from code import Client, Invoice
 
 
 parser = argparse.ArgumentParser(
@@ -33,18 +33,50 @@ parser.add_argument(
     "--edit-invoice","--ei",
     action='store_true',
     help='Edit an invoice')
+parser.add_argument(
+    "--list-invoice","--li",
+    action='store_true',
+    help='List invoices')
+parser.add_argument(
+    "--list-active-invoice","--lai",
+    action='store_true',
+    help='List invoices')
 
 args = parser.parse_args()
 print(args)
 
 if args.add_client:
-    x = Client.Client()
-    x.prompt_edit_user()
+    client = Client.Client()
+    client.prompt_edit_user()
 
 if args.edit_client:
-    x = Client.Client.prompt_select_user()
-    x.prompt_edit_user()
-    print(x.user_card())
+    client = Client.Client.prompt_select_user()
+    if client is None:
+        exit()
+    client.prompt_edit_user()
+    print(client.card())
+
+if args.new_invoice:
+    client = Client.Client.prompt_select_user()
+    if client is None:
+        exit()
+    invoice = Invoice.Invoice()
+    invoice.prompt_new_invoice(client)
+
+if args.list_invoice:
+    for client in Client.Client.clients_iter():
+        print()
+        print(client.card())
+        client.load_invoices()
+        for invoice in client.invoices:
+            
+            print(f"  - {invoice}")
+    pass
+
+if args.list_active_invoice:
+    pass
+
+
 
 
 # readline.insert_text('test')
