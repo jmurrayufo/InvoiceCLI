@@ -10,10 +10,12 @@ from .Helpers import prompt_text, prompt_valid_index
 class Invoice:
 
 
-    db = SQL.SQL()
+    db = None
 
 
     def __init__(self,**kwargs):
+        if Invoice.db == None:
+            Invoice.db = db = SQL.SQL()
         self.name = kwargs.get('name', 'NO NAME')
         self.description = kwargs.get('description', None)
         self.invoice_id = kwargs.get('invoice_id', uuid.uuid1())
@@ -44,7 +46,7 @@ class Invoice:
         ret_val = ""
         ret_val += f"Name: {self.name}"
         ret_val += f"\n  Description: {self.description}"
-        client_dict = self.db.get_client(client_id=self.client_id)
+        client_dict = Invoice.db.get_client(client_id=self.client_id)
         ret_val += f"\n  Client: {client_dict['first_name']} {client_dict['last_name']}"
         ret_val += f"\n  Created: {self.created}"
         ret_val += f"\n  Due: {self.due}"
@@ -65,10 +67,10 @@ class Invoice:
 
 
     def save_to_db(self):
-        self.db.put_invoice(self)
+        Invoice.db.put_invoice(self)
         for item in self.items:
             item.save_to_db()
-        self.db.commit()
+        Invoice.db.commit()
 
 
     def prompt_new_invoice(self, client=None):
@@ -179,11 +181,10 @@ class Invoice:
         """
 
         if items_list is None:
-            items_list = self.db.get_items()
+            items_list = Invoice.db.get_items()
         for item in items_list:
             if uuid.UUID(item['invoice_id']) == self.invoice_id:
                 item = Item.Item(**item)
                 self.items.append(item)
-                print(item)
 
 

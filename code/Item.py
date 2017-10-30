@@ -7,7 +7,7 @@ from .Helpers import prompt_text, prompt_float
 class Item:
 
 
-    db = SQL.SQL()
+    db = None
 
 
     def __init__(self,**kwargs):
@@ -22,6 +22,8 @@ class Item:
             id -- Unique id applied to Item (Items may share the same name/description, but id should always be unique)
         """
         # print(kwargs)
+        if Item.db == None:
+            Item.db = SQL.SQL()
         self.name = kwargs.get('name', '')
         self.description = kwargs.get('description', '')
         self.amount = float(kwargs.get('amount',0.0))
@@ -46,9 +48,9 @@ class Item:
 
 
     def save_to_db(self, commit=False):
-        self.db.put_item(self)
+        Item.db.put_item(self)
         if commit:
-            self.db.commit()
+            Item.db.commit()
 
 
     def prompt_edit_item(self):

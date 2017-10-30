@@ -9,8 +9,13 @@ from .Helpers import prompt_text
 
 class Client:
 
-    db = SQL.SQL()
+
+    db = None
+
+
     def __init__(self,*args,**kwargs):
+        if Client.db == None:
+            Client.db = SQL.SQL()
         self.first_name = kwargs.get('first_name', None)
         self.last_name = kwargs.get('last_name', None)
         self.email = kwargs.get('email', None)
@@ -24,7 +29,7 @@ class Client:
 
         if self.client_id is None and len(kwargs):
             try:
-                db_dict = self.db.get_client(first_name=self.first_name, last_name=self.last_name)
+                db_dict = Client.db.get_client(first_name=self.first_name, last_name=self.last_name)
                 self.first_name = db_dict.get('first_name', None)
                 self.last_name = db_dict.get('last_name', None)
                 self.email = db_dict.get('email', None)
@@ -66,13 +71,13 @@ class Client:
 
 
     def save_to_db(self):
-        self.db.put_client(self)
-        self.db.commit()
+        Client.db.put_client(self)
+        Client.db.commit()
 
 
     def load_invoices(self):
-        data = self.db.get_invoices()
-        items = self.db.get_items()
+        data = Client.db.get_invoices()
+        items = Client.db.get_items()
         for datum in data:
             invoice = Invoice.Invoice(**datum)
             if invoice.client_id == self.client_id:
@@ -148,6 +153,8 @@ class Client:
 
     @classmethod
     def prompt_select_user(cls):
+        if cls.db == None:
+            cls.db = SQL.SQL()
         clients_list = cls.db.get_clients()
         for idx,client_dict in enumerate(clients_list):
             client = Client(**client_dict)
@@ -166,6 +173,8 @@ class Client:
 
     @classmethod
     def clients_iter(cls):
+        if cls.db == None:
+            cls.db = SQL.SQL()
         clients_list = cls.db.get_clients()
         for idx,client_dict in enumerate(clients_list):
             client = Client(**client_dict)
