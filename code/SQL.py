@@ -265,7 +265,8 @@ class SQL:
         pass
 
     def get_items(self):
-        pass
+        self.c.execute("SELECT * FROM items")
+        return self.c.fetchall()
 
     def put_item(self,item,new=False):
         self.c.execute("""

@@ -65,7 +65,7 @@ class Invoice:
 
 
     def save_to_db(self):
-        self.db.put_invoice(self)
+        # self.db.put_invoice(self)
         for item in self.items:
             item.save_to_db()
         self.db.commit()
@@ -179,7 +179,11 @@ class Invoice:
         """
 
         if items_list is None:
-            
-            for item in items_list:
+            items_list = self.db.get_items()
+        for item in items_list:
+            if uuid.UUID(item['invoice_id']) == self.invoice_id:
+                item = Item.Item(**item)
+                self.items.append(item)
+                print(item)
 
 

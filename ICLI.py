@@ -12,69 +12,57 @@ parser = argparse.ArgumentParser(
     description="Invoice Command Line Interface",
     )
 
-parser.add_argument(
-    "--add-client","--ac",
-    action='store_true',
-    help='Add a new client')
-parser.add_argument(
-    "--edit-client","--ec",
-    action='store_true',
-    help='Edit an existing client')
+subparsers = parser.add_subparsers(
+    help="Sub command help",
+    dest='cmd')
 
-parser.add_argument(
-    "--new-invoice","--ni",
-    action='store_true',
-    help='Create a new invoice')
-parser.add_argument(
-    "--duplicate-invoice","--di",
-    action='store_true',
-    help='Create a duplicate invoice')
-parser.add_argument(
-    "--edit-invoice","--ei",
-    action='store_true',
-    help='Edit an invoice')
-parser.add_argument(
-    "--list-invoice","--li",
-    action='store_true',
-    help='List invoices')
-parser.add_argument(
-    "--list-active-invoice","--lai",
-    action='store_true',
-    help='List invoices')
+client_parser = subparsers.add_parser(
+    "client",
+    help="Client manipulations")
+client_parser.add_argument(
+    "sub_cmd")
+
+invoice_parser = subparsers.add_parser(
+    "invoice",
+    help="Invoice manipulations")
+invoice_parser.add_argument(
+    "sub_cmd")
 
 args = parser.parse_args()
 print(args)
-
-if args.add_client:
-    client = Client.Client()
-    client.prompt_edit_user()
-
-if args.edit_client:
-    client = Client.Client.prompt_select_user()
-    if client is None:
-        exit()
-    client.prompt_edit_user()
-    print(client.card())
-
-if args.new_invoice:
-    client = Client.Client.prompt_select_user()
-    if client is None:
-        exit()
-    invoice = Invoice.Invoice()
-    invoice.prompt_new_invoice(client)
-
-if args.list_invoice:
-    for client in Client.Client.clients_iter():
-        print()
+# exit()
+if args.cmd == 'client':
+    if args.sub_cmd == 'new':
+        client = Client.Client()
+        client.prompt_edit_user()
+    elif  args.sub_cmd == 'edit':
+        client = Client.Client.prompt_select_user()
+        if client is None:
+            exit()
+        client.prompt_edit_user()
         print(client.card())
-        client.load_invoices()
-        for invoice in client.invoices:
-            
-            print(f"  - {invoice}")
-    pass
+    elif  args.sub_cmd == 'list':
+        pass
 
-if args.list_active_invoice:
     pass
+if args.cmd == 'invoice':    
+    if args.sub_cmd == 'new':
+        client = Client.Client.prompt_select_user()
+        if client is None:
+            exit()
+        invoice = Invoice.Invoice()
+        invoice.prompt_new_invoice(client)
+    elif args.sub_cmd == 'list':
+        for client in Client.Client.clients_iter():
+            print()
+            print(client.card())
+            client.load_invoices()
+            for invoice in client.invoices:
+                print(f"  - {invoice}")    
+    elif args.sub_cmd == 'list-active':
+        raise NotImplementedError("Can't list active yet.")
+
+
 
 
 

@@ -21,6 +21,7 @@ class Item:
             tax -- % tax applied to total after discount
             id -- Unique id applied to Item (Items may share the same name/description, but id should always be unique)
         """
+        # print(kwargs)
         self.name = kwargs.get('name', '')
         self.description = kwargs.get('description', '')
         self.amount = float(kwargs.get('amount',0.0))

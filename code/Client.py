@@ -72,10 +72,11 @@ class Client:
 
     def load_invoices(self):
         data = self.db.get_invoices()
+        items = self.db.get_items()
         for datum in data:
             invoice = Invoice.Invoice(**datum)
             if invoice.client_id == self.client_id:
-                invoice.load_items()
+                invoice.load_items(items)
                 self.invoices.append(invoice)
 
 
