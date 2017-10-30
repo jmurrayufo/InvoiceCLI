@@ -65,7 +65,7 @@ class Invoice:
 
 
     def save_to_db(self):
-        # self.db.put_invoice(self)
+        self.db.put_invoice(self)
         for item in self.items:
             item.save_to_db()
         self.db.commit()

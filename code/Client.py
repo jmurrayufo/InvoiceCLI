@@ -20,7 +20,7 @@ class Client:
         self.zip_code = kwargs.get('zip_code', None)
         self.client_id = kwargs.get('client_id', None)
         self.invoices = kwargs.get('invoices', [])
-        self.created = kwargs.get('created',None)
+        self.created = kwargs.get('created',datetime.datetime.now())
 
         if self.client_id is None and len(kwargs):
             try:
@@ -34,7 +34,7 @@ class Client:
                 self.zip_code = db_dict.get('zip_code', None)
                 self.client_id = db_dict.get('client_id', None)
                 self.invoices = db_dict.get('invoices', [])
-                self.created = db_dict.get('created',None)
+                self.created = db_dict.get('created',datetime.datetime.now())
             except ValueError:
                 self.client_id = uuid.uuid1()
                 self.created = datetime.datetime.now()

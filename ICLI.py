@@ -20,7 +20,8 @@ client_parser = subparsers.add_parser(
     "client",
     help="Client manipulations")
 client_parser.add_argument(
-    "sub_cmd")
+    "sub_cmd",
+    choices=['new','edit','list'])
 
 invoice_parser = subparsers.add_parser(
     "invoice",
@@ -30,7 +31,7 @@ invoice_parser.add_argument(
 
 args = parser.parse_args()
 print(args)
-# exit()
+
 if args.cmd == 'client':
     if args.sub_cmd == 'new':
         client = Client.Client()
@@ -42,9 +43,10 @@ if args.cmd == 'client':
         client.prompt_edit_user()
         print(client.card())
     elif  args.sub_cmd == 'list':
-        pass
+        for client in Client.Client.clients_iter():
+            print()
+            print(client.card())
 
-    pass
 if args.cmd == 'invoice':    
     if args.sub_cmd == 'new':
         client = Client.Client.prompt_select_user()
