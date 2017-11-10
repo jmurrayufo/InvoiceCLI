@@ -27,7 +27,8 @@ invoice_parser = subparsers.add_parser(
     "invoice",
     help="Invoice manipulations")
 invoice_parser.add_argument(
-    "sub_cmd")
+    "sub_cmd",
+    help="[new|list]")
 
 args = parser.parse_args()
 print(args)
